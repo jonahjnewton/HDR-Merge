@@ -1,0 +1,3 @@
+#! /bin/bash
+
+python3 $REZ_HDR_MERGE_ROOT/python/hdr_merge/hdr_brackets.py

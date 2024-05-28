@@ -2,7 +2,7 @@
 
 name = 'hdr_merge'
 
-version = '1.0.1'
+version = '1.0.2'
 
 requires = [
     'oiio',
@@ -12,6 +12,7 @@ requires = [
 ]
 
 def commands():
+    env.PATH.append('{root}/bin')
     env.PYTHONPATH.append('{root}/python')
     env.PYTHONPATH.append('{root}/blender')
 

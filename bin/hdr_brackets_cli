@@ -1,0 +1,38 @@
+#! /bin/bash
+function usage() {
+    cat <<USAGE
+
+    Usage: $0 source target
+
+    source:             hmm
+    target:             yes
+
+USAGE
+    exit 1
+}
+
+if [ $# -eq 0 ]; then
+    usage # run usage function
+    exit 1
+fi
+
+echo $@
+
+while [ "$1" != "" ]; do
+    case $1 in
+    --folder)
+        shift
+        FOLDER=$1
+        ;;
+    -h | --help)
+        usage
+        ;;
+    *)
+        usage
+        exit 1
+        ;;
+    esac
+    shift
+done
+
+python3 $REZ_HDR_MERGE_ROOT/python/hdr_merge/hdr_brackets_cli.py --folder $FOLDER

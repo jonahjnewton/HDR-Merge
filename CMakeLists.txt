@@ -16,6 +16,14 @@ rez_install_files(
 	LOCAL_SYMLINK
 )
 
+FILE(GLOB_RECURSE bin_files bin/*)
+rez_install_files(
+	${bin_files}
+	DESTINATION .
+	LOCAL_SYMLINK
+	EXECUTABLE
+)
+
 # FILE(GLOB_RECURSE build_files build/*)
 # rez_install_files(
 # 	${build_files}

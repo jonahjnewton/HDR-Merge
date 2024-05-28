@@ -1,3 +1,4 @@
+import os
 import sys
 import subprocess
 import json
@@ -344,8 +345,8 @@ class HDRBrackets(Frame):
             blender_exe = EXE_PATHS['blender_exe']
             luminance_cli_exe = EXE_PATHS['luminance_cli_exe']
             align_image_stack_exe = EXE_PATHS['align_image_stack_exe']
-            merge_blend = SCRIPT_DIR / "blender" / "HDR_Merge.blend"
-            merge_py = SCRIPT_DIR / "blender" / "blender_merge.py"
+            merge_blend = pathlib.Path(os.environ.get("REZ_HDR_MERGE_ROOT")) / "blender" / "HDR_Merge.blend"
+            merge_py = pathlib.Path(os.environ.get("REZ_HDR_MERGE_ROOT")) / "blender" / "blender_merge.py"
 
             out_folder = folder / "Merged"
             glob = self.extension.get()
