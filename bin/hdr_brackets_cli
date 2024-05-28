@@ -2,10 +2,9 @@
 function usage() {
     cat <<USAGE
 
-    Usage: $0 source target
+    Usage: $0 --folder folder
 
-    source:             hmm
-    target:             yes
+    --folder folder:    folder with EXR brackets that you wish to merge
 
 USAGE
     exit 1
