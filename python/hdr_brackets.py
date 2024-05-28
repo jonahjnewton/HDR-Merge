@@ -3,6 +3,7 @@ import subprocess
 import json
 import pathlib
 import exifread
+import OpenImageIO as oiio
 from math import log
 from tkinter import *
 from tkinter import filedialog, messagebox, ttk
@@ -38,6 +39,13 @@ def read_json(fp: pathlib.Path) -> dict:
         except json.JSONDecodeError as ex:
             raise RuntimeError('Error reading JSON from %s: %s' % (fp, ex))
 
+def get_exe_paths_rez() -> dict:
+    exe_paths = {}
+    exe_paths['blender_exe'] = 'blender'
+    exe_paths['luminance_cli_exe'] = 'rez-env luminance_hdr -- luminance-hdr-cli'
+    exe_paths['align_image_stack_exe'] = 'rez-env hugin -- align_image_stack'
+
+    return exe_paths
 
 def get_exe_paths() -> dict:
     global SCRIPT_DIR
@@ -70,7 +78,7 @@ def get_exe_paths() -> dict:
     return exe_paths
 
 
-EXE_PATHS = get_exe_paths()
+EXE_PATHS = get_exe_paths_rez()
 
 
 def play_sound(sf: str):
@@ -106,16 +114,35 @@ def chunks(l, n):
 
 
 def get_exif(filepath: pathlib.Path):
-    with filepath.open('rb') as f:
-        tags = exifread.process_file(f)
-    resolution = str(tags["Image ImageWidth"]) + 'x' + \
-        str(tags["Image ImageLength"])
-    shutter_speed = eval(str(tags["EXIF ExposureTime"]))
-    try:
-        aperture = eval(str(tags["EXIF FNumber"]))
-    except ZeroDivisionError:
-        aperture = 0
-    iso = int(str(tags["EXIF ISOSpeedRatings"]))
+    if filepath.suffix == '.exr':
+        filepath = str(filepath)
+        inp = oiio.ImageInput.open(filepath)
+
+        inp_spec = inp.spec()
+
+        resolution = str(inp_spec.width) + 'x' + str(inp_spec.height)
+
+        shutter_speed = inp_spec['ExposureTime']
+
+        try:
+            aperture = inp_spec['FNumber']
+        except:
+            aperture = 0
+
+        iso = int(inp_spec['Exif:ISOSpeedRatings'])
+
+        inp.close()
+    else:
+        with filepath.open('rb') as f:
+            tags = exifread.process_file(f)
+        resolution = str(tags["Image ImageWidth"]) + 'x' + \
+            str(tags["Image ImageLength"])
+        shutter_speed = eval(str(tags["EXIF ExposureTime"]))
+        try:
+            aperture = eval(str(tags["EXIF FNumber"]))
+        except ZeroDivisionError:
+            aperture = 0
+        iso = int(str(tags["EXIF ISOSpeedRatings"]))
     return {"resolution": resolution, "shutter_speed": shutter_speed, "aperture": aperture, "iso": iso}
 
 
@@ -182,7 +209,7 @@ class HDRBrackets(Frame):
         lbl_pattern = Label(r2, text="Matching Pattern:")
         lbl_pattern.pack(side=LEFT, padx=(padding, 0))
         self.extension = Entry(r2, width=6)
-        self.extension.insert(0, ".tif")
+        self.extension.insert(0, ".exr")
         self.extension.pack(side=LEFT, padx=(padding/2, 0))
         self.buttons_to_disable.append(self.extension)
 
@@ -248,8 +275,8 @@ class HDRBrackets(Frame):
             print("Aligning", i)
             align_folder.mkdir(parents=True, exist_ok=True)
             actual_img_list = [i.split("___")[0] for i in img_list]
-            cmd = [
-                align_image_stack_exe,
+            cmd = align_image_stack_exe.split(" ")
+            cmd += [
                 '-i',
                 '-l',
                 '-a',
@@ -268,6 +295,7 @@ class HDRBrackets(Frame):
             img_list = new_img_list
 
         print("Merging", i)
+
         cmd = [
             blender_exe,
             '--background',
@@ -283,8 +311,8 @@ class HDRBrackets(Frame):
         cmd += img_list
         subprocess.check_call(cmd)
 
-        cmd = [
-            luminance_cli_exe,
+        cmd = luminance_cli_exe.split(" ")
+        cmd += [
             '-l',
             exr_path.as_posix(),
             '-t',
@@ -399,7 +427,7 @@ def main():
     root = Tk()
     root.geometry("450x86")
     center(root)
-    root.iconbitmap(str(SCRIPT_DIR / "icons/icon.ico"))
+    # root.iconbitmap(str(SCRIPT_DIR / "icons/icon.ico"))
     app = HDRBrackets(root)
     root.mainloop()
 
