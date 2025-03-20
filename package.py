@@ -2,13 +2,13 @@
 
 name = 'hdr_merge'
 
-version = '1.0.3'
+version = '1.0.4'
 
 requires = [
     'oiio',
     'exifread',
-    'blender-2',
-    'python-3.10'
+    'blender',
+    'python-3.11'
 ]
 
 def commands():

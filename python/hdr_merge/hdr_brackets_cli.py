@@ -272,7 +272,7 @@ class HDRBrackets(Frame):
             glob = self.extension
             if '*' not in glob:
                 glob = '*%s' % glob
-            files = list(folder.glob(glob))
+            files = sorted(list(folder.glob(glob)))
 
             # Analyze EXIF to determine number of brackets
             exifs = []
